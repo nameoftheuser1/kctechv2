@@ -1,6 +1,6 @@
 import React from "react";
-import AuthSidebar from "../Components/Layouts/AuthSidebar";
 import Footer from "../Components/Shared/Footer";
+import GuestNavbar from "../Components/Layouts/GuestNavbar";
 
 function Home({ reservationCount }) {
     return (
@@ -64,5 +64,7 @@ function Home({ reservationCount }) {
         </>
     );
 }
+
+Home.layout = (page) => <GuestNavbar children={page} />;
 
 export default Home;

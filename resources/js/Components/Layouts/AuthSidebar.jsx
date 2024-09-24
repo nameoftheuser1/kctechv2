@@ -1,10 +1,39 @@
-import { Link } from "@inertiajs/react";
-import { useState } from "react";
+import { Link, useForm, usePage } from "@inertiajs/react";
+import React, { useState, useEffect } from "react";
 
-const AuthSidebar = ({ isOpen }) => {
-    const [isSidebarOpen, setSidebarOpen] = useState(isOpen);
+export default function AuthSidebar({ children }) {
+    const { post } = useForm();
+    const { url } = usePage();
+    const [isOpen, setIsOpen] = useState(false);
 
-    const menuItems = [
+    const toggleSidebar = () => {
+        setIsOpen((prev) => !prev);
+    };
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        post("/logout");
+    };
+
+    useEffect(() => {
+        const overlay = document.getElementById("sidebar-overlay");
+
+        const closeSidebar = () => {
+            setIsOpen(false);
+        };
+
+        if (overlay) {
+            overlay.addEventListener("click", closeSidebar);
+        }
+
+        return () => {
+            if (overlay) {
+                overlay.removeEventListener("click", closeSidebar);
+            }
+        };
+    }, [isOpen]);
+
+    const navLinks = [
         {
             icon: (
                 <path
@@ -14,7 +43,7 @@ const AuthSidebar = ({ isOpen }) => {
                 />
             ),
             label: "Dashboard",
-            route: "",
+            href: "/dashboard",
         },
         {
             icon: (
@@ -25,7 +54,7 @@ const AuthSidebar = ({ isOpen }) => {
                 />
             ),
             label: "Room Management",
-            route: "",
+            href: "/rooms",
         },
         {
             icon: (
@@ -35,93 +64,105 @@ const AuthSidebar = ({ isOpen }) => {
                     d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
                 />
             ),
-            label: "Salary Management",
-            route: "#",
+            label: "Staff Management",
+            href: "/staff",
         },
     ];
 
     return (
-        <div className="flex h-screen">
-            {isSidebarOpen && (
+        <>
+            {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black opacity-50 z-40 md:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                ></div>
+                    id="sidebar-overlay"
+                    className={`fixed inset-0 bg-black opacity-50 z-30 ${
+                        !isOpen ? "hidden" : ""
+                    }`}
+                />
             )}
-
-            <aside
-                className={`fixed inset-y-0 left-0 z-50 sm:z-0 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
-                    isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-                }`}
-            >
-                <div className="flex justify-between items-center p-4 border-b mt-14 md:mt-0">
-                    <h2 className="text-2xl font-bold">Kandahar</h2>
-                </div>
-                <nav className="p-4">
-                    <ul>
-                        {menuItems.map((item) => (
-                            <li
-                                key={item.route}
-                                className={`mb-4 hover:bg-slate-300 rounded-lg p-1 ${
-                                    window.location.pathname ===
-                                    route(item.route)
-                                        ? "bg-gray-300 text-slate-700"
-                                        : ""
-                                }`}
-                            >
-                                <Link
-                                    href={route(item.route)}
-                                    className="flex items-center space-x-2 text-slate-800"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-5 w-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        {item.icon}
-                                    </svg>
-                                    <span>{item.label}</span>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            </aside>
-
-            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-white md:hidden">
-                <button
-                    onClick={() => setSidebarOpen(!isSidebarOpen)}
-                    className="w-10 h-10"
-                    aria-label="Toggle Sidebar"
+            <div className="flex">
+                <div
+                    className="lg:hidden fixed top-0 p-4 cursor-pointer bg-white w-full"
+                    onClick={toggleSidebar}
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
                         fill="none"
                         viewBox="0 0 24 24"
+                        strokeWidth="1.5"
                         stroke="currentColor"
+                        className="size-6"
                     >
                         <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M4 6h16M4 12h16M4 18h16"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
                         />
                     </svg>
-                </button>
-                <div className="flex justify-center flex-1">
-                    <img src="/path/to/logo.png" alt="Logo" className="h-8" />
                 </div>
-                <div className="w-10 h-10"></div>
-            </nav>
-
-            <main className="flex-1 p-4 mt-14 md:mt-0 ms-0 md:ms-64 bg-gray-100">
-                {children}
-            </main>
-        </div>
+                <nav
+                    className={`lg:block lg:w-64 p-4 bg-white h-[100svh] fixed transition-transform duration-300 ease-in-out z-40 ${
+                        isOpen || window.innerWidth >= 1024
+                            ? "translate-x-0"
+                            : "hidden"
+                    }`}
+                    id="sidebar"
+                >
+                    <h1 className="mb-9 cursor-default">Kandahar Resort</h1>
+                    <p className="text-gray-500 text-sm text-center mb-3 cursor-default">
+                        MAIN MENU
+                    </p>
+                    <ul>
+                        {navLinks.map((link) => (
+                            <li key={link.label} className="mb-2">
+                                <Link
+                                    href={link.href}
+                                    className={`flex items-center space-x-2 text-gray-500 ${
+                                        url === link.href
+                                            ? "bg-indigo-800 !text-white p-2 rounded-lg ps-5"
+                                            : ""
+                                    }`}
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-7 mr-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        {link.icon}
+                                    </svg>
+                                    {link.label}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                    <form onSubmit={handleLogout} className="mt-auto">
+                        <button
+                            type="submit"
+                            className="flex items-center font-semibold text-xs text-white justify-center uppercase tracking-widest bg-slate-700 w-full rounded-lg p-3 mt-10"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                className="size-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"
+                                />
+                            </svg>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </nav>
+                <main className="flex-1 p-4 mt-14 md:mt-0 ms-0 md:ms-64 bg-gray-100 min-h-screen">
+                    {children}
+                </main>
+            </div>
+        </>
     );
-};
-
-export default AuthSidebar;
+}
