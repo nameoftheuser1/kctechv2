@@ -8,10 +8,10 @@ function Home({ reservationCount }) {
             <div>
                 <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-[60svh] flex justify-center items-center text-white">
                     <div className="w-[750px] text-center animate-fadeIn">
-                        <span className="text-[60px] font-semibold">
+                        <span className="text-[60px] font-semibold cursor-default">
                             Relax and unwind at Kandahar Resort
                         </span>
-                        <div className="mb-10">
+                        <div className="mb-10 cursor-default">
                             Experience comfort and luxury with hassle-free
                             reservations. Your getaway awaits!
                         </div>
@@ -26,10 +26,10 @@ function Home({ reservationCount }) {
 
                 <section className="flex flex-col md:flex-row container mx-auto px-5 my-14">
                     <div className="w-full my-auto" data-aos="fade-right">
-                        <h1 className="text-[50px] font-semibold text-gray-800">
+                        <h1 className="text-[50px] font-semibold text-gray-800 cursor-default">
                             Welcome to Kandahar Resort
                         </h1>
-                        <p className="text-gray-700">
+                        <p className="text-gray-700 cursor-default">
                             Experience unparalleled comfort and hospitality at
                             Kandahar Resort, where we offer a variety of rooms
                             and services tailored to make your stay
@@ -52,7 +52,7 @@ function Home({ reservationCount }) {
                     <div className="w-full mt-8 md:mt-0" data-aos="fade-left">
                         <img
                             src="/img/tables-sea-view.jpg"
-                            className="rounded"
+                            className="rounded pointer-events-none"
                             alt="Sea View"
                         />
                     </div>

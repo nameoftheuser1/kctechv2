@@ -79,7 +79,7 @@ export default function GuestNavbar({ children }) {
                     </div>
                 </div>
             )}
-            <div className="mt-[100px]">{children}</div>
+            <div className="mt-[100px] overflow-x-hidden">{children}</div>
         </div>
     );
 }
