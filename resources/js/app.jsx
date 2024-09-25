@@ -4,6 +4,7 @@ import "../css/app.css";
 import { createInertiaApp } from "@inertiajs/react";
 import { createRoot } from "react-dom/client";
 import GuestNavbar from "./Components/Layouts/GuestNavbar";
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 createInertiaApp({
     resolve: (name) => {

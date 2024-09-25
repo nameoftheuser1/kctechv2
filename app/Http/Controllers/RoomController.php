@@ -14,17 +14,22 @@ class RoomController extends Controller
      */
     public function index(Request $request)
     {
-        // Define the number of items per page
-        $perPage = 10; // Adjust this value as needed
+        $query = Room::query();
 
-        // Fetch paginated data
-        $rooms = Room::paginate($perPage); // Paginate rooms
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('room_number', 'like', "%{$search}%")
+                ->orWhere('stay_type', 'like', "%{$search}%");
+        }
 
-        // Prepare data for the view
+        $rooms = $query->latest()->paginate(10);
+
         return inertia('Rooms/Rooms', [
             'rooms' => $rooms,
+            'search' => $request->input('search'),
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
