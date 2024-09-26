@@ -13,15 +13,15 @@ class Room extends Model
 
     protected $fillable = [
         'room_number',
-        'category_id',
+        'room_type_id',
         'price',
         'pax',
         'stay_type',
     ];
 
-    public function category(): BelongsTo
+    public function room_type(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(RoomType::class, 'room_type_id');
     }
 
     public function reservations(): BelongsToMany

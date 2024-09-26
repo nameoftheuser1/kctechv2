@@ -9,19 +9,10 @@
     @vite('resources/js/app.jsx')
     @inertiaHead
     @routes
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 
 <body>
     @inertia
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            AOS.init({
-                duration: 800,
-            });
-        });
-    </script>
 </body>
 
 </html>

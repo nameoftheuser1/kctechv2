@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Room;
+use App\Models\RoomType;
 use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class RoomController extends Controller
 {
@@ -36,7 +39,11 @@ class RoomController extends Controller
      */
     public function create()
     {
-        //
+        $room_types = RoomType::all();
+
+        return Inertia::render('Rooms/RoomCreate', [
+            'room_types' => $room_types,
+        ]);
     }
 
     /**
@@ -44,7 +51,25 @@ class RoomController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $fields = $request->validate([
+                'room_number' => ['required', 'string', 'max:255', 'unique:rooms'],
+                'room_type_id' => ['required', 'exists:room_types,id'],
+                'price' => ['required', 'numeric', 'min:0'],
+                'pax' => ['required', 'integer', 'min:1'],
+                'stay_type' => ['required', 'string', 'in:day tour,overnight'],
+            ]);
+
+            Room::create($fields);
+
+            return redirect()->route('rooms.index')->with('success', 'Room created successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed', ['errors' => $e->errors()]);
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error creating room', ['error' => $e->getMessage()]);
+            return back()->with('error', 'An error occurred while creating the room. Please try again.')->withInput();
+        }
     }
 
     /**
