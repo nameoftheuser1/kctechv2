@@ -10,15 +10,14 @@ function Rooms({ rooms, search, flash }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { success } = flash || {};
     const [showSuccess, setShowSuccess] = useState(false);
+    const [filteredRooms, setFilteredRooms] = useState(rooms.data);
 
     useEffect(() => {
         if (success) {
             setShowSuccess(true);
-
             const timer = setTimeout(() => {
                 setShowSuccess(false);
             }, 3000);
-
             return () => clearTimeout(timer);
         }
     }, [success]);
@@ -36,7 +35,16 @@ function Rooms({ rooms, search, flash }) {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        post(route("rooms.index"), { search: data.search });
+        const searchValue = data.search.toLowerCase();
+
+        const filtered = rooms.data.filter(
+            (room) =>
+                room.room_number.toLowerCase().includes(searchValue) ||
+                room.stay_type.toLowerCase().includes(searchValue) ||
+                room.room_type_name.toLowerCase().includes(searchValue) // Update here
+        );
+
+        setFilteredRooms(filtered);
     };
 
     const handleRoomTypeSubmit = (e) => {
@@ -47,7 +55,7 @@ function Rooms({ rooms, search, flash }) {
         setIsModalOpen(false);
     };
 
-    const columns = ["Room Number", "Price", "Pax", "Stay Type"];
+    const columns = ["Room Number", "Room Type", "Price", "Pax", "Stay Type"];
 
     const renderActions = (room) => {
         if (!room || !room.id) {
@@ -188,10 +196,13 @@ function Rooms({ rooms, search, flash }) {
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        {rooms.data.map((room) => (
+                        {filteredRooms.map((room) => (
                             <tr className="bg-white border-b" key={room.id}>
                                 <td className="px-6 py-4">
                                     {room.room_number}
+                                </td>
+                                <td className="px-6 py-4">
+                                    {room.room_type_name}{" "}
                                 </td>
                                 <td className="px-6 py-4">
                                     ₱{room.price.toFixed(2)}
@@ -210,7 +221,7 @@ function Rooms({ rooms, search, flash }) {
                 </table>
             </div>
 
-            <RoomCard rooms={rooms.data} confirmDelete={confirmDelete} />
+            <RoomCard rooms={filteredRooms} confirmDelete={confirmDelete} />
         </>
     );
 }

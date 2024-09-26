@@ -11,8 +11,8 @@ function RoomCreate({ room_types }) {
     const { data, setData, post, processing, errors } = useForm({
         room_number: "",
         room_type_id: "",
-        price: "",
-        pax: "",
+        price: 0,
+        pax: 0,
         stay_type: "",
     });
 
@@ -21,7 +21,6 @@ function RoomCreate({ room_types }) {
         post(route("rooms.store"), {
             preserveState: true,
             preserveScroll: true,
-            onSuccess: () => {},
             onError: (errors) => {
                 console.error("Error creating room:", errors);
             },

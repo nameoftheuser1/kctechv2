@@ -17,9 +17,8 @@ class RoomController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Room::query();
-
-        $query->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
+        $query = Room::query()
+            ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
             ->select('rooms.*', 'room_types.name as room_type_name');
 
         if ($request->filled('search')) {
@@ -31,7 +30,7 @@ class RoomController extends Controller
             });
         }
 
-        $rooms = $query->latest()->paginate(10);
+        $rooms = $query->latest()->paginate(10)->withQueryString();
 
         return inertia('Rooms/Rooms', [
             'rooms' => $rooms,

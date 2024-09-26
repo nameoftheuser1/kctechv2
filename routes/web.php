@@ -5,6 +5,7 @@ use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\StaffController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -21,4 +22,5 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/rooms', RoomController::class);
     Route::resource('/roomtypes', RoomTypeController::class);
+    Route::resource('/staffs', StaffController::class);
 });
