@@ -14,5 +14,7 @@ class RoomTypeController extends Controller
         ]);
 
         RoomType::create($fields);
+
+        session()->flash('success', 'Room type added successfully.');
     }
 }

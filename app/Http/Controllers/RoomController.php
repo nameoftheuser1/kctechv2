@@ -19,10 +19,16 @@ class RoomController extends Controller
     {
         $query = Room::query();
 
+        $query->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
+            ->select('rooms.*', 'room_types.name as room_type_name');
+
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where('room_number', 'like', "%{$search}%")
-                ->orWhere('stay_type', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('rooms.room_number', 'like', "%{$search}%")
+                    ->orWhere('rooms.stay_type', 'like', "%{$search}%")
+                    ->orWhere('room_types.name', 'like', "%{$search}%");
+            });
         }
 
         $rooms = $query->latest()->paginate(10);
@@ -51,25 +57,20 @@ class RoomController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $fields = $request->validate([
-                'room_number' => ['required', 'string', 'max:255', 'unique:rooms'],
-                'room_type_id' => ['required', 'exists:room_types,id'],
-                'price' => ['required', 'numeric', 'min:0'],
-                'pax' => ['required', 'integer', 'min:1'],
-                'stay_type' => ['required', 'string', 'in:day tour,overnight'],
-            ]);
 
-            Room::create($fields);
+        $fields = $request->validate([
+            'room_number' => ['required', 'string', 'max:255', 'unique:rooms'],
+            'room_type_id' => ['required', 'exists:room_types,id'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'pax' => ['required', 'integer', 'min:1'],
+            'stay_type' => ['required', 'string', 'in:day tour,overnight'],
+        ]);
 
-            return redirect()->route('rooms.index')->with('success', 'Room created successfully!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation failed', ['errors' => $e->errors()]);
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            Log::error('Error creating room', ['error' => $e->getMessage()]);
-            return back()->with('error', 'An error occurred while creating the room. Please try again.')->withInput();
-        }
+        Room::create($fields);
+
+        session()->flash('success', 'Room added successfully.');
+
+        return redirect()->route('rooms.index');
     }
 
     /**

@@ -53,7 +53,10 @@ function Home() {
                 </div>
             </section>
 
-            <Footer />
+            <section className="">
+
+            </section>
+            <Footer/>
         </>
     );
 }

@@ -1,10 +1,11 @@
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useForm, usePage } from "@inertiajs/react";
-import React, { useState, useEffect } from "react";
 
 export default function AuthSidebar({ children }) {
     const { post } = useForm();
     const { url } = usePage();
     const [isOpen, setIsOpen] = useState(false);
+    const sidebarRef = useRef(null);
 
     const toggleSidebar = () => {
         setIsOpen((prev) => !prev);
@@ -16,22 +17,20 @@ export default function AuthSidebar({ children }) {
     };
 
     useEffect(() => {
-        const overlay = document.getElementById("sidebar-overlay");
-
-        const closeSidebar = () => {
-            setIsOpen(false);
-        };
-
-        if (overlay) {
-            overlay.addEventListener("click", closeSidebar);
-        }
-
-        return () => {
-            if (overlay) {
-                overlay.removeEventListener("click", closeSidebar);
+        const handleOutsideClick = (event) => {
+            if (
+                sidebarRef.current &&
+                !sidebarRef.current.contains(event.target)
+            ) {
+                setIsOpen(false);
             }
         };
-    }, [isOpen]);
+
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => {
+            document.removeEventListener("mousedown", handleOutsideClick);
+        };
+    }, []);
 
     const navLinks = [
         {
@@ -70,99 +69,90 @@ export default function AuthSidebar({ children }) {
     ];
 
     return (
-        <>
-            {isOpen && (
-                <div
-                    id="sidebar-overlay"
-                    className={`fixed inset-0 bg-black opacity-50 z-30 ${
-                        !isOpen ? "hidden" : ""
-                    }`}
-                />
-            )}
-            <div className="flex">
-                <div
-                    className="lg:hidden fixed top-0 p-4 cursor-pointer bg-white w-full"
-                    onClick={toggleSidebar}
+        <div className="flex">
+            <div
+                className="lg:hidden fixed top-0 left-0 p-4 cursor-pointer bg-white w-full z-50"
+                onClick={toggleSidebar}
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="size-6"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="size-6"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                        />
-                    </svg>
-                </div>
-                <nav
-                    className={`lg:block lg:w-64 p-4 bg-white h-[100svh] fixed transition-transform duration-300 ease-in-out z-40 ${
-                        isOpen || window.innerWidth >= 1024
-                            ? "translate-x-0"
-                            : "hidden"
-                    }`}
-                    id="sidebar"
-                >
-                    <h1 className="mb-9 cursor-default">Kandahar Resort</h1>
-                    <p className="text-gray-500 text-sm text-center mb-3 cursor-default">
-                        MAIN MENU
-                    </p>
-                    <ul>
-                        {navLinks.map((link) => (
-                            <li key={link.label} className="mb-2">
-                                <Link
-                                    href={link.href}
-                                    className={`flex items-center space-x-2 text-gray-500 ${
-                                        url === link.href
-                                            ? "bg-indigo-800 !text-white p-2 rounded-lg ps-5"
-                                            : ""
-                                    }`}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="w-7 mr-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        {link.icon}
-                                    </svg>
-                                    {link.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                    <form onSubmit={handleLogout} className="mt-auto">
-                        <button
-                            type="submit"
-                            className="flex items-center font-semibold text-xs text-white justify-center uppercase tracking-widest bg-slate-700 w-full rounded-lg p-3 mt-10"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth="1.5"
-                                stroke="currentColor"
-                                className="size-6"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"
-                                />
-                            </svg>
-                            <span>Logout</span>
-                        </button>
-                    </form>
-                </nav>
-                <main className="flex-1 p-4 mt-14 md:mt-0 ms-0 md:ms-64 bg-gray-100 min-h-screen">
-                    {children}
-                </main>
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                    />
+                </svg>
             </div>
-        </>
+            <nav
+                ref={sidebarRef}
+                className={`lg:block w-64 p-4 bg-white h-[100svh] fixed transition-transform duration-300 ease-in-out z-40 ${
+                    isOpen
+                        ? "translate-x-0"
+                        : "-translate-x-full lg:translate-x-0"
+                }`}
+            >
+                <h1 className="mb-9 cursor-default">Kandahar Resort</h1>
+                <p className="text-gray-500 text-sm text-center mb-3 cursor-default">
+                    MAIN MENU
+                </p>
+                <ul>
+                    {navLinks.map((link) => (
+                        <li key={link.label} className="mb-2">
+                            <Link
+                                href={link.href}
+                                className={`flex items-center space-x-2 text-gray-500 ${
+                                    url === link.href
+                                        ? "bg-indigo-800 !text-white p-2 rounded-lg ps-5"
+                                        : ""
+                                }`}
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-7 mr-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    {link.icon}
+                                </svg>
+                                {link.label}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+                <form onSubmit={handleLogout} className="mt-auto">
+                    <button
+                        type="submit"
+                        className="flex items-center font-semibold text-xs text-white justify-center uppercase tracking-widest bg-slate-700 w-full rounded-lg p-3 mt-10"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth="1.5"
+                            stroke="currentColor"
+                            className="size-6"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"
+                            />
+                        </svg>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </nav>
+            <main className="flex-1 p-4 mt-14 lg:mt-0 ms-0 lg:ms-64 bg-gray-100 min-h-screen">
+                {children}
+            </main>
+        </div>
     );
 }

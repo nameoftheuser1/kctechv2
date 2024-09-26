@@ -21,9 +21,7 @@ function RoomCreate({ room_types }) {
         post(route("rooms.store"), {
             preserveState: true,
             preserveScroll: true,
-            onSuccess: () => {
-                console.log("Room created successfully");
-            },
+            onSuccess: () => {},
             onError: (errors) => {
                 console.error("Error creating room:", errors);
             },
