@@ -1,8 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { useRoute } from "../../../../vendor/tightenco/ziggy";
 import AuthSidebar from "../../Components/Layouts/AuthSidebar";
-import DataTable from "../../Components/Forms/DataTable";
 
 function Rooms({ rooms, search }) {
     const route = useRoute();
@@ -10,6 +9,7 @@ function Rooms({ rooms, search }) {
 
     const { data, setData, post, errors, processing } = useForm({
         name: "",
+        search: "",
     });
 
     const handleSearch = (e) => {
@@ -17,9 +17,9 @@ function Rooms({ rooms, search }) {
         post(route("rooms.index"), { search: data.search });
     };
 
-    const handleCategorySubmit = (e) => {
+    const handleRoomTypeSubmit = (e) => {
         e.preventDefault();
-        post(route("categories.store"), {
+        post(route("roomtypes.store"), {
             name: data.name,
         });
         setIsModalOpen(false);
@@ -27,30 +27,39 @@ function Rooms({ rooms, search }) {
 
     const columns = ["Room Number", "Price", "Pax", "Stay Type"];
 
-    const renderActions = (room) => (
-        <>
-            <Link
-                href={route("rooms.edit", room)}
-                className="font-medium text-blue-600 hover:underline"
-            >
-                Edit
-            </Link>
-            <button
-                className="text-red-600 hover:underline ml-2"
-                onClick={() => confirmDelete(`delete-form-${room.id}`, "room")}
-            >
-                Delete
-            </button>
-            <form
-                id={`delete-form-${room.id}`}
-                action={route("rooms.destroy", room)}
-                method="POST"
-                style={{ display: "none" }}
-            >
-                @csrf @method('DELETE')
-            </form>
-        </>
-    );
+    const renderActions = (room) => {
+        if (!room || !room.id) {
+            console.error("Room object is missing or has no id:", room);
+            return null;
+        }
+
+        return (
+            <>
+                <Link
+                    href={route("rooms.edit", { room: room.id })}
+                    className="font-medium text-blue-600 hover:underline"
+                >
+                    Edit
+                </Link>
+                <button
+                    className="text-red-600 hover:underline ml-2"
+                    onClick={() =>
+                        confirmDelete(`delete-form-${room.id}`, "room")
+                    }
+                >
+                    Delete
+                </button>
+                <form
+                    id={`delete-form-${room.id}`}
+                    action={route("rooms.destroy", { room: room.id })}
+                    method="POST"
+                    style={{ display: "none" }}
+                >
+                    @csrf @method('DELETE')
+                </form>
+            </>
+        );
+    };
 
     return (
         <>
@@ -95,7 +104,7 @@ function Rooms({ rooms, search }) {
                             d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                         />
                     </svg>
-                    Add Category
+                    Add Room Type
                 </button>
             </div>
 
@@ -103,7 +112,7 @@ function Rooms({ rooms, search }) {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                     <div className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
                         <h2 className="text-xl font-bold mb-4">Add Category</h2>
-                        <form onSubmit={handleCategorySubmit}>
+                        <form onSubmit={handleRoomTypeSubmit}>
                             <div className="mb-4">
                                 <label
                                     htmlFor="name"
@@ -151,23 +160,66 @@ function Rooms({ rooms, search }) {
             )}
 
             <div className="hidden md:block">
-                <DataTable
-                    captionTitle="Rooms"
-                    captionSubtitle="Browse a list of available rooms in our reservation system."
-                    searchValue={data.search}
-                    handleSearch={handleSearch}
-                    handleInputChange={(e) => setData("search", e.target.value)}
-                    columns={columns}
-                    data={rooms.data.map((room) => ({
-                        room_number: room.room_number,
-                        price: `₱${room.price.toFixed(2)}`,
-                        pax: room.pax,
-                        stay_type:
-                            room.stay_type.charAt(0).toUpperCase() +
-                            room.stay_type.slice(1),
-                    }))}
-                    renderActions={renderActions}
-                />
+                <table className="min-w-full text-sm text-left rtl:text-right text-gray-500">
+                    <caption className="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white w-full">
+                        Rooms
+                        <p className="mt-1 text-sm font-normal text-gray-500">
+                            Browse a list of available rooms in our reservation
+                            system.
+                        </p>
+                        <form onSubmit={handleSearch}>
+                            <input
+                                type="text"
+                                name="search"
+                                id="search-input"
+                                placeholder="Search..."
+                                className="p-2 border text-sm rounded w-full focus:ring-pink-600 mb-1 mt-2"
+                                onChange={(e) =>
+                                    setData("search", e.target.value)
+                                }
+                                value={data.search}
+                            />
+                            <button
+                                type="submit"
+                                className="p-2 bg-blue-500 text-white rounded w-full text-sm hover:bg-blue-700"
+                            >
+                                Search
+                            </button>
+                        </form>
+                    </caption>
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            {columns.map((col) => (
+                                <th scope="col" className="px-6 py-3" key={col}>
+                                    {col}
+                                </th>
+                            ))}
+                            <th scope="col" className="px-6 py-3 text-right">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        {rooms.data.map((room) => (
+                            <tr className="bg-white border-b" key={room.id}>
+                                <td className="px-6 py-4">
+                                    {room.room_number}
+                                </td>
+                                <td className="px-6 py-4">
+                                    ₱{room.price.toFixed(2)}
+                                </td>
+                                <td className="px-6 py-4">{room.pax}</td>
+                                <td className="px-6 py-4">
+                                    {room.stay_type.charAt(0).toUpperCase() +
+                                        room.stay_type.slice(1)}
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                    {renderActions(room)}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
 
             <div className="md:hidden grid grid-cols-1 gap-4 p-4">
@@ -202,14 +254,16 @@ function Rooms({ rooms, search }) {
                             </button>
                             <form
                                 id={`delete-form-${room.id}`}
-                                action={route("rooms.destroy", room)}
+                                action={route("rooms.destroy", {
+                                    room: room.id,
+                                })}
                                 method="POST"
                                 style={{ display: "none" }}
                             >
                                 @csrf @method('DELETE')
                             </form>
                             <Link
-                                href={route("rooms.edit", room)}
+                                href={route("rooms.edit", { room: room.id })}
                                 className="font-medium text-blue-600 hover:underline"
                             >
                                 Edit

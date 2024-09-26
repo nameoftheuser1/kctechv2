@@ -6,10 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Category extends Model
+class RoomType extends Model
 {
     use HasFactory;
-
 
     protected $fillable = [
         'name',
@@ -17,6 +16,6 @@ class Category extends Model
 
     public function rooms(): HasMany
     {
-        return $this->hasMany(Room::class, 'category_id');
+        return $this->hasMany(Room::class, 'room_type_id');
     }
 }

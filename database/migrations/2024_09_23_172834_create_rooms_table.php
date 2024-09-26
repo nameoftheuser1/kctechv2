@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('room_types', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->unique();
             $table->timestamps();
@@ -19,8 +19,8 @@ return new class extends Migration
 
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('category_id')->nullable();
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
+            $table->unsignedBigInteger('room_type_id')->nullable();
+            $table->foreign('room_type_id')->references('id')->on('room_types')->onDelete('set null');
             $table->string('room_number', 50);
             $table->decimal('price', 8, 2);
             $table->integer('pax');
@@ -31,8 +31,8 @@ return new class extends Migration
         Schema::create('images', function (Blueprint $table) {
             $table->id();
             $table->string('path_url');
-            $table->unsignedBigInteger('category_id');
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
+            $table->unsignedBigInteger('room_types_id');
+            $table->foreign('room_types_id')->references('id')->on('room_types')->onDelete('cascade');
             $table->timestamps();
         });
     }
