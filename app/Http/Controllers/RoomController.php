@@ -4,10 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Room;
 use App\Models\RoomType;
-use App\Http\Requests\StoreRoomRequest;
-use App\Http\Requests\UpdateRoomRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class RoomController extends Controller
@@ -101,6 +98,8 @@ class RoomController extends Controller
      */
     public function destroy(Room $room)
     {
-        //
+        $room->delete();
+
+        return redirect()->route('rooms.index')->with('success', 'Room deleted successfully.');
     }
 }

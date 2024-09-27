@@ -4,13 +4,19 @@ import { useRoute } from "../../../../vendor/tightenco/ziggy";
 import AuthSidebar from "../../Components/Layouts/AuthSidebar";
 import RoomCard from "./RoomCard";
 import CategoryModal from "./CategoryModal";
+import Pagination from "../../Components/Shared/Pagination";
+import EntityActions from "../../Components/Shared/EntityActions";
 
 function Rooms({ rooms, search, flash }) {
     const route = useRoute();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const { success } = flash || {};
     const [showSuccess, setShowSuccess] = useState(false);
+
     const [filteredRooms, setFilteredRooms] = useState(rooms.data);
+    const [currentPage, setCurrentPage] = useState(rooms.current_page);
 
     useEffect(() => {
         if (success) {
@@ -41,7 +47,7 @@ function Rooms({ rooms, search, flash }) {
             (room) =>
                 room.room_number.toLowerCase().includes(searchValue) ||
                 room.stay_type.toLowerCase().includes(searchValue) ||
-                room.room_type_name.toLowerCase().includes(searchValue) // Update here
+                room.room_type_name.toLowerCase().includes(searchValue)
         );
 
         setFilteredRooms(filtered);
@@ -55,40 +61,12 @@ function Rooms({ rooms, search, flash }) {
         setIsModalOpen(false);
     };
 
-    const columns = ["Room Number", "Room Type", "Price", "Pax", "Stay Type"];
-
-    const renderActions = (room) => {
-        if (!room || !room.id) {
-            return null;
-        }
-
-        return (
-            <>
-                <Link
-                    href={route("rooms.edit", { room: room.id })}
-                    className="font-medium text-blue-600 hover:underline"
-                >
-                    Edit
-                </Link>
-                <button
-                    className="text-red-600 hover:underline ml-2"
-                    onClick={() =>
-                        confirmDelete(`delete-form-${room.id}`, "room")
-                    }
-                >
-                    Delete
-                </button>
-                <form
-                    id={`delete-form-${room.id}`}
-                    action={route("rooms.destroy", { room: room.id })}
-                    method="POST"
-                    style={{ display: "none" }}
-                >
-                    @csrf @method('DELETE')
-                </form>
-            </>
-        );
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        post(route("rooms.index"), { search: data.search, page: page });
     };
+
+    const columns = ["Room Number", "Room Type", "Price", "Pax", "Stay Type"];
 
     return (
         <>
@@ -108,40 +86,12 @@ function Rooms({ rooms, search, flash }) {
                     href={route("rooms.create")}
                     className="text-sm bg-slate-600 text-white p-2 rounded-lg flex items-center w-full"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="w-6 h-6 mr-1"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                    </svg>
                     Add Room
                 </Link>
                 <button
                     className="text-sm bg-pink-600 text-white p-2 rounded-lg flex items-center w-full"
                     onClick={() => setIsModalOpen(true)}
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="w-6 h-6 mr-1"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                    </svg>
                     Add Room Type
                 </button>
             </div>
@@ -202,24 +152,39 @@ function Rooms({ rooms, search, flash }) {
                                     {room.room_number}
                                 </td>
                                 <td className="px-6 py-4">
-                                    {room.room_type_name}{" "}
+                                    {room.room_type_name}
                                 </td>
                                 <td className="px-6 py-4">
                                     ₱{room.price.toFixed(2)}
                                 </td>
                                 <td className="px-6 py-4">{room.pax}</td>
-                                <td className="px-6 py-4">
-                                    {room.stay_type.charAt(0).toUpperCase() +
-                                        room.stay_type.slice(1)}
-                                </td>
+                                <td className="px-6 py-4">{room.stay_type}</td>
                                 <td className="px-6 py-4 text-right">
-                                    {renderActions(room)}
+                                    <EntityActions
+                                        entity={room}
+                                        entityName="rooms"
+                                        editRoute={(id) =>
+                                            route("rooms.edit", { room: id })
+                                        }
+                                        onDelete={(id) =>
+                                            confirmDelete(
+                                                `delete-form-${id}`,
+                                                "room"
+                                            )
+                                        }
+                                    />
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+
+            <Pagination
+                currentPage={currentPage}
+                lastPage={rooms.last_page}
+                onPageChange={handlePageChange}
+            />
 
             <RoomCard rooms={filteredRooms} confirmDelete={confirmDelete} />
         </>

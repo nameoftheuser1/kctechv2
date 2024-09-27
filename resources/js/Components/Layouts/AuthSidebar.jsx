@@ -107,7 +107,7 @@ export default function AuthSidebar({ children }) {
                             <Link
                                 href={link.href}
                                 className={`flex items-center space-x-2 text-gray-500 ${
-                                    url === link.href
+                                    url.startsWith(link.href)
                                         ? "bg-indigo-800 !text-white p-2 rounded-lg ps-5"
                                         : ""
                                 }`}

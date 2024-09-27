@@ -22,5 +22,5 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('/rooms', RoomController::class);
     Route::resource('/roomtypes', RoomTypeController::class);
-    Route::resource('/staffs', StaffController::class);
+    Route::resource('/staff', StaffController::class);
 });

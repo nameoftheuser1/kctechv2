@@ -3,18 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Models\Staff;
-use App\Http\Requests\StoreStaffRequest;
-use App\Http\Requests\UpdateStaffRequest;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class StaffController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = Staff::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('salary', 'like', "%{$search}%");
+            });
+        }
+
+        $staff = $query->latest()->paginate(10);
+
+        $staff->appends(['search' => $request->input('search')]);
+
+        return inertia('Staff/Staff', [
+            'staff' => $staff,
+            'search' => $request->input('search'),
+        ]);
     }
 
     /**
@@ -22,7 +38,7 @@ class StaffController extends Controller
      */
     public function create()
     {
-        //
+        return inertia('Staff/StaffCreate');
     }
 
     /**
@@ -30,7 +46,17 @@ class StaffController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $fields = $request->validate([
+            'name' => ['required', 'max:50', 'regex:/^[\p{L} ]+$/u'],
+            'salary' => ['required', 'numeric', 'min:0'],
+            'payout_date' => ['required', 'date', 'date_format:Y-m-d', 'after_or_equal:today'],
+        ]);
+
+        Staff::create($fields);
+
+        session()->flash('success', 'Staff added successfully.');
+
+        return redirect()->route('staff.index');
     }
 
     /**

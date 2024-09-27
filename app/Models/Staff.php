@@ -17,7 +17,7 @@ class Staff extends Model
     ];
 
     protected $casts = [
-        'payout_date' => 'date',
+        'payout_date' => 'date:Y-m-d',
     ];
 
     public function advanceSalaries(): HasMany
