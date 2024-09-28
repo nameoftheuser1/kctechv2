@@ -1,19 +1,18 @@
-import { useEffect, useState } from "react";
-import { useRoute } from "../../../../vendor/tightenco/ziggy/src/js";
-import AuthSidebar from "../../Components/Layouts/AuthSidebar";
-import EntityActions from "../../Components/Shared/EntityActions";
+import React, { useEffect, useState } from "react";
 import { Head, Link, useForm } from "@inertiajs/react";
+import AuthSidebar from "../../Components/Layouts/AuthSidebar";
+import { useRoute } from "../../../../vendor/tightenco/ziggy/src/js";
+import EntityActions from "../../Components/Shared/EntityActions";
 import Pagination from "../../Components/Shared/Pagination";
-import StaffCard from "./StaffCard";
 
-function Staff({ staff, search, flash }) {
+function Expenses({ expenses, search, flash }) {
     const route = useRoute();
 
     const { success } = flash || {};
     const [showSuccess, setShowSuccess] = useState(false);
 
-    const [filteredStaff, setFilteredStaff] = useState(staff.data);
-    const [currentPage, setCurrentPage] = useState(staff.currentPage);
+    const [filteredExpenses, setFilteredExpenses] = useState(expenses.data);
+    const [currentPage, setCurrentPage] = useState(expenses.current_page);
 
     useEffect(() => {
         if (success) {
@@ -26,11 +25,11 @@ function Staff({ staff, search, flash }) {
     }, [success]);
 
     const { data, setData, post } = useForm({
-        search: "",
+        search: search || "",
     });
 
-    const confirmDelete = (formId, type) => {
-        if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
+    const confirmDelete = (formId) => {
+        if (window.confirm("Are you sure you want to delete this expense?")) {
             document.getElementById(formId).submit();
         }
     };
@@ -39,26 +38,31 @@ function Staff({ staff, search, flash }) {
         e.preventDefault();
         const searchValue = data.search.toLowerCase();
 
-        const filtered = staff.data.filter(
-            (staffMember) =>
-                staffMember.name.toLowerCase().includes(searchValue) ||
-                staffMember.salary.toLowerCase().includes(searchValue) ||
-                staffMember.payout_date.toLowerCase().includes(searchValue)
+        const filtered = expenses.data.filter(
+            (expense) =>
+                expense.expense_description
+                    .toLowerCase()
+                    .includes(searchValue) ||
+                expense.amount.toString().includes(searchValue) ||
+                new Date(expense.date)
+                    .toLocaleDateString()
+                    .toLowerCase()
+                    .includes(searchValue)
         );
 
-        setFilteredStaff(filtered);
+        setFilteredExpenses(filtered);
     };
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
-        post(route("staff.index"), { search: data.search, page: page });
+        post(route("expenses.index"), { search: data.search, page: page });
     };
 
-    const columns = ["Name", "Salary", "Payout Date"];
+    const columns = ["Description", "Amount", "Date"];
 
     return (
         <>
-            <Head title="Staff List" />
+            <Head title="Expenses List" />
 
             {showSuccess && (
                 <div
@@ -70,10 +74,10 @@ function Staff({ staff, search, flash }) {
             )}
             <div className="mb-4 flex justify-center gap-4">
                 <Link
-                    href={route("staff.create")}
+                    href={route("expenses.create")}
                     className="text-sm bg-slate-600 text-white p-2 rounded-lg flex items-center w-full"
                 >
-                    Add Staff
+                    Add Expense
                 </Link>
             </div>
 
@@ -97,10 +101,9 @@ function Staff({ staff, search, flash }) {
             <div className="hidden md:block">
                 <table className="min-w-full text-sm text-left rtl:text-right text-gray-500">
                     <caption className="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white w-full">
-                        Staff List
+                        Expenses List
                         <p className="mt-1 text-sm font-normal text-gray-500">
-                            Browse a list of staff members in our reservation
-                            system.
+                            Browse a list of expenses in our system.
                         </p>
                     </caption>
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50">
@@ -116,26 +119,31 @@ function Staff({ staff, search, flash }) {
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        {filteredStaff.map((member) => (
+                        {filteredExpenses.map((expense) => (
                             <tr
-                                key={member.id}
+                                key={expense.id}
                                 className="bg-white border-b hover:bg-gray-100 cursor-pointer"
                             >
                                 <td className="px-6 py-4" colSpan="3">
                                     <Link
-                                        href={route("staff.show", {
-                                            id: member.id,
+                                        href={route("expenses.show", {
+                                            id: expense.id,
                                         })}
                                         className="block w-full h-full"
                                     >
                                         <div className="flex justify-between">
-                                            <span>{member.name}</span>
                                             <span>
-                                                ₱{member.salary.toFixed(2)}
+                                                {expense.expense_description}
+                                            </span>
+                                            <span>
+                                                ₱
+                                                {parseFloat(
+                                                    expense.amount
+                                                ).toFixed(2)}
                                             </span>
                                             <span>
                                                 {new Date(
-                                                    member.payout_date
+                                                    expense.date
                                                 ).toLocaleDateString("en-US", {
                                                     year: "numeric",
                                                     month: "long",
@@ -147,16 +155,15 @@ function Staff({ staff, search, flash }) {
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <EntityActions
-                                        entity={member}
-                                        entityName="staff"
+                                        entity={expense}
+                                        entityName="expenses"
                                         editRoute={(id) =>
-                                            route("staff.edit", { staff: id })
+                                            route("expenses.edit", {
+                                                expense: id,
+                                            })
                                         }
                                         onDelete={(id) =>
-                                            confirmDelete(
-                                                `delete-form-${id}`,
-                                                "staff member"
-                                            )
+                                            confirmDelete(`delete-form-${id}`)
                                         }
                                     />
                                 </td>
@@ -168,15 +175,58 @@ function Staff({ staff, search, flash }) {
 
             <Pagination
                 currentPage={currentPage}
-                lastPage={staff.last_page}
+                lastPage={expenses.last_page}
                 onPageChange={handlePageChange}
             />
 
-            <StaffCard staff={filteredStaff} confirmDelete={confirmDelete} />
+            <div className="md:hidden">
+                {filteredExpenses.map((expense) => (
+                    <div
+                        key={expense.id}
+                        className="bg-white shadow-md rounded-lg mb-4 p-4"
+                    >
+                        <h3 className="text-lg font-semibold mb-2">
+                            {expense.expense_description}
+                        </h3>
+                        <p className="text-gray-600 mb-2">
+                            Amount: ₱{parseFloat(expense.amount).toFixed(2)}
+                        </p>
+                        <p className="text-gray-600 mb-2">
+                            Date:{" "}
+                            {new Date(expense.date).toLocaleDateString(
+                                "en-US",
+                                {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                }
+                            )}
+                        </p>
+                        <div className="flex justify-end mt-2">
+                            <Link
+                                href={route("expenses.edit", {
+                                    expense: expense.id,
+                                })}
+                                className="text-blue-500 hover:underline mr-2"
+                            >
+                                Edit
+                            </Link>
+                            <button
+                                onClick={() =>
+                                    confirmDelete(`delete-form-${expense.id}`)
+                                }
+                                className="text-red-500 hover:underline"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </>
     );
 }
 
-Staff.layout = (page) => <AuthSidebar children={page} />;
+Expenses.layout = (page) => <AuthSidebar children={page} />;
 
-export default Staff;
+export default Expenses;

@@ -82,7 +82,12 @@ class RoomController extends Controller
      */
     public function edit(Room $room)
     {
-        //
+        $room_types = RoomType::all();
+
+        return Inertia::render('Rooms/RoomEdit', [
+            'room' => $room,
+            'room_types' => $room_types,
+        ]);
     }
 
     /**
@@ -90,7 +95,19 @@ class RoomController extends Controller
      */
     public function update(Request $request, Room $room)
     {
-        //
+        $fields = $request->validate([
+            'room_number' => ['required', 'string', 'max:255', 'unique:rooms,room_number,' . $room->id],
+            'room_type_id' => ['required', 'exists:room_types,id'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'pax' => ['required', 'integer', 'min:1'],
+            'stay_type' => ['required', 'string', 'in:day tour,overnight'],
+        ]);
+
+        $room->update($fields);
+
+        session()->flash('success', 'Room updated successfully.');
+
+        return redirect()->route('rooms.index');
     }
 
     /**
@@ -100,6 +117,8 @@ class RoomController extends Controller
     {
         $room->delete();
 
-        return redirect()->route('rooms.index')->with('success', 'Room deleted successfully.');
+        session()->flash('deleted', 'Staff deleted successfully.');
+
+        return redirect()->route('rooms.index');
     }
 }

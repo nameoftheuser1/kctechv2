@@ -6,7 +6,7 @@ export default function RoomCard({ rooms, confirmDelete }) {
     const route = useRoute();
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 lg:hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:p-6 mt-2 lg:hidden ">
             {rooms.map((room) => (
                 <div
                     className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 transform transition duration-300 hover:scale-105"

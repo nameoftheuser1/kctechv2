@@ -49,7 +49,7 @@ class StaffController extends Controller
         $fields = $request->validate([
             'name' => ['required', 'max:50', 'regex:/^[\p{L} ]+$/u'],
             'salary' => ['required', 'numeric', 'min:0'],
-            'payout_date' => ['required', 'date', 'date_format:Y-m-d', 'after_or_equal:today'],
+            'payout_date' => ['required', 'date', 'date_format:Y-m-d'],
         ]);
 
         Staff::create($fields);
@@ -64,7 +64,18 @@ class StaffController extends Controller
      */
     public function show(Staff $staff)
     {
-        //
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
+        $advanceSalaries = $staff->advanceSalaries()
+            ->whereYear('created_at', $currentYear)
+            ->whereMonth('created_at', $currentMonth)
+            ->paginate(10);
+
+        return Inertia::render('Staff/StaffShow', [
+            'staff' => $staff,
+            'advanceSalaries' => $advanceSalaries,
+        ]);
     }
 
     /**
@@ -72,7 +83,9 @@ class StaffController extends Controller
      */
     public function edit(Staff $staff)
     {
-        //
+        return Inertia::render('Staff/StaffEdit', [
+            'staff' => $staff,
+        ]);
     }
 
     /**
@@ -80,7 +93,17 @@ class StaffController extends Controller
      */
     public function update(Request $request, Staff $staff)
     {
-        //
+        $fields = $request->validate([
+            'name' => ['required', 'max:50', 'regex:/^[\p{L} ]+$/u'],
+            'salary' => ['required', 'numeric', 'min:0'],
+            'payout_date' => ['required', 'date', 'date_format:Y-m-d'],
+        ]);
+
+        $staff->update($fields);
+
+        session()->flash('success', 'Staff updated successfully.');
+
+        return redirect()->route('staff.index');
     }
 
     /**
@@ -88,6 +111,11 @@ class StaffController extends Controller
      */
     public function destroy(Staff $staff)
     {
-        //
+        $staff->delete();
+
+        session()->flash('deleted', 'Staff updated successfully.');
+
+        return redirect()->route('staff.index');
+
     }
 }
