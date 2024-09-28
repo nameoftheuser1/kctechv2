@@ -8,21 +8,21 @@ const InputLabel = lazy(() => import("@/Components/Forms/InputLabel"));
 const TextInput = lazy(() => import("@/Components/Forms/TextInput"));
 const InputError = lazy(() => import("@/Components/Forms/InputError"));
 
-function ExpenseCreate() {
+function ExpenseEdit({ expense }) {
     const route = useRoute();
-    const { data, setData, post, processing, errors } = useForm({
-        expense_description: "",
-        amount: 0,
-        date_time: "",
+    const { data, setData, put, processing, errors } = useForm({
+        expense_description: expense.expense_description || "",
+        amount: expense.amount || 0,
+        date_time: expense.date_time || "",
     });
 
     function handleSubmit(e) {
         e.preventDefault();
-        post(route("expenses.store"), {
+        put(route("expenses.update", expense.id), {
             preserveState: true,
             preserveScroll: true,
             onError: (errors) => {
-                console.error("Error creating expense:", errors);
+                console.error("Error updating expense:", errors);
             },
         });
     }
@@ -38,10 +38,10 @@ function ExpenseCreate() {
                         &larr; back to expenses list
                     </Link>
                     <h1 className="text-3xl font-bold text-slate-700 mt-4">
-                        Add an Expense
+                        Edit Expense
                     </h1>
                     <p className="text-sm text-slate-500 mb-6">
-                        Add expense details
+                        Update the expense details
                     </p>
                     <form
                         onSubmit={handleSubmit}
@@ -114,10 +114,10 @@ function ExpenseCreate() {
                         <div>
                             <button
                                 type="submit"
-                                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 disabled={processing}
                             >
-                                Create Expense
+                                Update Expense
                             </button>
                         </div>
                     </form>
@@ -127,6 +127,6 @@ function ExpenseCreate() {
     );
 }
 
-ExpenseCreate.layout = (page) => <AuthSidebar children={page} />;
+ExpenseEdit.layout = (page) => <AuthSidebar children={page} />;
 
-export default ExpenseCreate;
+export default ExpenseEdit;

@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Head, Link, useForm } from "@inertiajs/react";
 import { useRoute } from "../../../../vendor/tightenco/ziggy";
-import AuthSidebar from "../../Components/Layouts/AuthSidebar";
-import RoomCard from "./RoomCard";
-import CategoryModal from "./CategoryModal";
-import Pagination from "../../Components/Shared/Pagination";
-import EntityActions from "../../Components/Shared/EntityActions";
+import AuthSidebar from "@/Components/Layouts/AuthSidebar";
+import Spinner from "@/Components/Shared/Spinner";
+
+const RoomCard = lazy(() => import("./RoomCard"));
+const CategoryModal = lazy(() => import("./CategoryModal"));
+const Pagination = lazy(() => import("@/Components/Shared/Pagination"));
+const EntityActions = lazy(() =>import("@/Components/Shared/EntityActions"));
 
 function Rooms({ rooms, search, flash }) {
     const route = useRoute();
@@ -70,123 +72,136 @@ function Rooms({ rooms, search, flash }) {
 
     return (
         <>
-            <Head title="Room List" />
+            <Suspense fallback={<Spinner />}>
+                <Head title="Room List" />
 
-            {showSuccess && (
-                <div
-                    className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg"
-                    role="alert"
-                >
-                    {success}
+                {showSuccess && (
+                    <div
+                        className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg"
+                        role="alert"
+                    >
+                        {success}
+                    </div>
+                )}
+
+                <div className="mb-4 flex justify-center gap-4">
+                    <Link
+                        href={route("rooms.create")}
+                        className="text-sm bg-slate-600 text-white p-2 rounded-lg flex items-center w-full"
+                    >
+                        Add Room
+                    </Link>
+                    <button
+                        className="text-sm bg-pink-600 text-white p-2 rounded-lg flex items-center w-full"
+                        onClick={() => setIsModalOpen(true)}
+                    >
+                        Add Room Type
+                    </button>
                 </div>
-            )}
 
-            <div className="mb-4 flex justify-center gap-4">
-                <Link
-                    href={route("rooms.create")}
-                    className="text-sm bg-slate-600 text-white p-2 rounded-lg flex items-center w-full"
-                >
-                    Add Room
-                </Link>
-                <button
-                    className="text-sm bg-pink-600 text-white p-2 rounded-lg flex items-center w-full"
-                    onClick={() => setIsModalOpen(true)}
-                >
-                    Add Room Type
-                </button>
-            </div>
-
-            <CategoryModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSubmit={handleRoomTypeSubmit}
-                data={data}
-                setData={setData}
-                processing={processing}
-                errors={errors}
-            />
-
-            <form onSubmit={handleSearch} className="mb-4">
-                <input
-                    type="text"
-                    name="search"
-                    id="search-input"
-                    placeholder="Search..."
-                    className="p-2 border text-sm rounded w-full focus:ring-pink-600 mb-1 mt-2"
-                    onChange={(e) => setData("search", e.target.value)}
-                    value={data.search}
+                <CategoryModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onSubmit={handleRoomTypeSubmit}
+                    data={data}
+                    setData={setData}
+                    processing={processing}
+                    errors={errors}
                 />
-                <button
-                    type="submit"
-                    className="p-2 bg-blue-500 text-white rounded w-full text-sm hover:bg-blue-700"
-                >
-                    Search
-                </button>
-            </form>
 
-            <div className="hidden md:block">
-                <table className="min-w-full text-sm text-left rtl:text-right text-gray-500">
-                    <caption className="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white w-full">
-                        Rooms
-                        <p className="mt-1 text-sm font-normal text-gray-500">
-                            Browse a list of available rooms in our reservation
-                            system.
-                        </p>
-                    </caption>
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                        <tr>
-                            {columns.map((col) => (
-                                <th scope="col" className="px-6 py-3" key={col}>
-                                    {col}
+                <form onSubmit={handleSearch} className="mb-4">
+                    <input
+                        type="text"
+                        name="search"
+                        id="search-input"
+                        placeholder="Search..."
+                        className="p-2 border text-sm rounded w-full focus:ring-pink-600 mb-1 mt-2"
+                        onChange={(e) => setData("search", e.target.value)}
+                        value={data.search}
+                    />
+                    <button
+                        type="submit"
+                        className="p-2 bg-blue-500 text-white rounded w-full text-sm hover:bg-blue-700"
+                    >
+                        Search
+                    </button>
+                </form>
+
+                <div className="hidden md:block">
+                    <table className="min-w-full text-sm text-left rtl:text-right text-gray-500">
+                        <caption className="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white w-full">
+                            Rooms
+                            <p className="mt-1 text-sm font-normal text-gray-500">
+                                Browse a list of available rooms in our
+                                reservation system.
+                            </p>
+                        </caption>
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                {columns.map((col) => (
+                                    <th
+                                        scope="col"
+                                        className="px-6 py-3"
+                                        key={col}
+                                    >
+                                        {col}
+                                    </th>
+                                ))}
+                                <th
+                                    scope="col"
+                                    className="px-6 py-3 text-right"
+                                >
+                                    Actions
                                 </th>
-                            ))}
-                            <th scope="col" className="px-6 py-3 text-right">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        {filteredRooms.map((room) => (
-                            <tr className="bg-white border-b" key={room.id}>
-                                <td className="px-6 py-4">
-                                    {room.room_number}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {room.room_type_name}
-                                </td>
-                                <td className="px-6 py-4">
-                                    ₱{room.price.toFixed(2)}
-                                </td>
-                                <td className="px-6 py-4">{room.pax}</td>
-                                <td className="px-6 py-4">{room.stay_type}</td>
-                                <td className="px-6 py-4 text-right">
-                                    <EntityActions
-                                        entity={room}
-                                        entityName="rooms"
-                                        editRoute={(id) =>
-                                            route("rooms.edit", { room: id })
-                                        }
-                                        onDelete={(id) =>
-                                            confirmDelete(
-                                                `delete-form-${id}`,
-                                                "room"
-                                            )
-                                        }
-                                    />
-                                </td>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody id="table-body">
+                            {filteredRooms.map((room) => (
+                                <tr className="bg-white border-b" key={room.id}>
+                                    <td className="px-6 py-4">
+                                        {room.room_number}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {room.room_type_name}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        ₱{room.price.toFixed(2)}
+                                    </td>
+                                    <td className="px-6 py-4">{room.pax}</td>
+                                    <td className="px-6 py-4">
+                                        {room.stay_type}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <EntityActions
+                                            entity={room}
+                                            entityName="rooms"
+                                            editRoute={(id) =>
+                                                route("rooms.edit", {
+                                                    room: id,
+                                                })
+                                            }
+                                            onDelete={(id) =>
+                                                confirmDelete(
+                                                    `delete-form-${id}`,
+                                                    "room"
+                                                )
+                                            }
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
-            <Pagination
-                currentPage={currentPage}
-                lastPage={rooms.last_page}
-                onPageChange={handlePageChange}
-            />
+                <Pagination
+                    currentPage={currentPage}
+                    lastPage={rooms.last_page}
+                    onPageChange={handlePageChange}
+                />
 
-            <RoomCard rooms={filteredRooms} confirmDelete={confirmDelete} />
+                <RoomCard rooms={filteredRooms} confirmDelete={confirmDelete} />
+            </Suspense>
         </>
     );
 }

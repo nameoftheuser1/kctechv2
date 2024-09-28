@@ -1,7 +1,7 @@
 import { Link, useForm } from "@inertiajs/react";
 
 const EntityActions = ({ entity, entityName, onDelete, editRoute }) => {
-    const { post } = useForm(); // Using the useForm hook to manage form submission
+    const { post } = useForm();
 
     if (!entity || !entity.id) {
         return null;

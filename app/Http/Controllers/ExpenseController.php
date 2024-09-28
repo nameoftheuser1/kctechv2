@@ -74,7 +74,9 @@ class ExpenseController extends Controller
      */
     public function edit(Expense $expense)
     {
-        //
+        return inertia('Expenses/ExpenseEdit', [
+            'expense' => $expense,
+        ]);
     }
 
     /**
@@ -82,7 +84,17 @@ class ExpenseController extends Controller
      */
     public function update(Request $request, Expense $expense)
     {
-        //
+        $fields = $request->validate([
+            'expense_description' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'date_time' => 'required|date',
+        ]);
+
+        $expense->update($fields);
+
+        session()->flash('success', 'Expense updated successfully.');
+
+        return redirect()->route('expenses.index');
     }
 
     /**
@@ -90,6 +102,10 @@ class ExpenseController extends Controller
      */
     public function destroy(Expense $expense)
     {
-        //
+        $expense->delete();
+
+        session()->flash('deleted', 'Expenses deleted successfully.');
+
+        return redirect()->route('expenses.index');
     }
 }

@@ -122,36 +122,22 @@ function Expenses({ expenses, search, flash }) {
                         {filteredExpenses.map((expense) => (
                             <tr
                                 key={expense.id}
-                                className="bg-white border-b hover:bg-gray-100 cursor-pointer"
+                                className="bg-white border-b "
                             >
-                                <td className="px-6 py-4" colSpan="3">
-                                    <Link
-                                        href={route("expenses.show", {
-                                            id: expense.id,
-                                        })}
-                                        className="block w-full h-full"
-                                    >
-                                        <div className="flex justify-between">
-                                            <span>
-                                                {expense.expense_description}
-                                            </span>
-                                            <span>
-                                                ₱
-                                                {parseFloat(
-                                                    expense.amount
-                                                ).toFixed(2)}
-                                            </span>
-                                            <span>
-                                                {new Date(
-                                                    expense.date
-                                                ).toLocaleDateString("en-US", {
-                                                    year: "numeric",
-                                                    month: "long",
-                                                    day: "numeric",
-                                                })}
-                                            </span>
-                                        </div>
-                                    </Link>
+                                <td className="px-6 py-4">
+                                    {expense.expense_description}
+                                </td>
+                                <td className="px-6 py-4">
+                                    ₱{parseFloat(expense.amount).toFixed(2)}
+                                </td>
+                                <td className="px-6 py-4">
+                                    {new Date(
+                                        expense.date_time
+                                    ).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                    })}
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <EntityActions
@@ -193,7 +179,7 @@ function Expenses({ expenses, search, flash }) {
                         </p>
                         <p className="text-gray-600 mb-2">
                             Date:{" "}
-                            {new Date(expense.date).toLocaleDateString(
+                            {new Date(expense.date_time).toLocaleDateString(
                                 "en-US",
                                 {
                                     year: "numeric",

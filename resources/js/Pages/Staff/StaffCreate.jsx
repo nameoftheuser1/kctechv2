@@ -15,7 +15,7 @@ function StaffCreate() {
 
     function handleSubmit(e) {
         e.preventDefault();
-        post(route("staff.store"), {
+        post(route("staff.store", { staff: data }), {
             preserveState: true,
             preserveScroll: true,
             onError: (errors) => {
