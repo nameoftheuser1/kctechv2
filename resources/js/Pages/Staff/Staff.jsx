@@ -1,24 +1,21 @@
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Head, Link, useForm } from "@inertiajs/react";
-import { useRoute } from "../../../../vendor/tightenco/ziggy";
-import AuthSidebar from "@/Components/Layouts/AuthSidebar";
-import Spinner from "@/Components/Shared/Spinner";
+import { useRoute } from "../../../../vendor/tightenco/ziggy/src/js";
+import AuthSidebar from "../../Components/Layouts/AuthSidebar";
 
-const RoomCard = lazy(() => import("./RoomCard"));
-const CategoryModal = lazy(() => import("./CategoryModal"));
+const EntityActions = lazy(() => import("@/Components/Shared/EntityActions"));
 const Pagination = lazy(() => import("@/Components/Shared/Pagination"));
-const EntityActions = lazy(() =>import("@/Components/Shared/EntityActions"));
+const StaffCard = lazy(() => import("./StaffCard"));
+const Spinner = lazy(() => import("@/Components/Shared/Spinner"));
 
-function Rooms({ rooms, search, flash }) {
+function Staff({ staff, search, flash }) {
     const route = useRoute();
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { success } = flash || {};
     const [showSuccess, setShowSuccess] = useState(false);
 
-    const [filteredRooms, setFilteredRooms] = useState(rooms.data);
-    const [currentPage, setCurrentPage] = useState(rooms.current_page);
+    const [filteredStaff, setFilteredStaff] = useState(staff.data);
+    const [currentPage, setCurrentPage] = useState(staff.currentPage);
 
     useEffect(() => {
         if (success) {
@@ -30,8 +27,7 @@ function Rooms({ rooms, search, flash }) {
         }
     }, [success]);
 
-    const { data, setData, post, errors, processing } = useForm({
-        name: "",
+    const { data, setData, post } = useForm({
         search: "",
     });
 
@@ -45,35 +41,27 @@ function Rooms({ rooms, search, flash }) {
         e.preventDefault();
         const searchValue = data.search.toLowerCase();
 
-        const filtered = rooms.data.filter(
-            (room) =>
-                room.room_number.toLowerCase().includes(searchValue) ||
-                room.stay_type.toLowerCase().includes(searchValue) ||
-                room.room_type_name.toLowerCase().includes(searchValue)
+        const filtered = staff.data.filter(
+            (staffMember) =>
+                staffMember.name.toLowerCase().includes(searchValue) ||
+                staffMember.salary.toLowerCase().includes(searchValue) ||
+                staffMember.payout_date.toLowerCase().includes(searchValue)
         );
 
-        setFilteredRooms(filtered);
-    };
-
-    const handleRoomTypeSubmit = (e) => {
-        e.preventDefault();
-        post(route("roomtypes.store"), {
-            name: data.name,
-        });
-        setIsModalOpen(false);
+        setFilteredStaff(filtered);
     };
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
-        post(route("rooms.index"), { search: data.search, page: page });
+        post(route("staff.index"), { search: data.search, page: page });
     };
 
-    const columns = ["Room Number", "Room Type", "Price", "Pax", "Stay Type"];
+    const columns = ["Name", "Salary", "Payout Date"];
 
     return (
         <>
             <Suspense fallback={<Spinner />}>
-                <Head title="Room List" />
+                <Head title="Staff List" />
 
                 {showSuccess && (
                     <div
@@ -83,31 +71,14 @@ function Rooms({ rooms, search, flash }) {
                         {success}
                     </div>
                 )}
-
                 <div className="mb-4 flex justify-center gap-4">
                     <Link
-                        href={route("rooms.create")}
+                        href={route("staff.create")}
                         className="text-sm bg-slate-600 text-white p-2 rounded-lg flex items-center w-full"
                     >
-                        Add Room
+                        Add Staff
                     </Link>
-                    <button
-                        className="text-sm bg-pink-600 text-white p-2 rounded-lg flex items-center w-full"
-                        onClick={() => setIsModalOpen(true)}
-                    >
-                        Add Room Type
-                    </button>
                 </div>
-
-                <CategoryModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    onSubmit={handleRoomTypeSubmit}
-                    data={data}
-                    setData={setData}
-                    processing={processing}
-                    errors={errors}
-                />
 
                 <form onSubmit={handleSearch} className="mb-4">
                     <input
@@ -126,13 +97,12 @@ function Rooms({ rooms, search, flash }) {
                         Search
                     </button>
                 </form>
-
                 <div className="hidden md:block">
                     <table className="min-w-full text-sm text-left rtl:text-right text-gray-500">
                         <caption className="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white w-full">
-                            Rooms
+                            Staff List
                             <p className="mt-1 text-sm font-normal text-gray-500">
-                                Browse a list of available rooms in our
+                                Browse a list of staff members in our
                                 reservation system.
                             </p>
                         </caption>
@@ -156,34 +126,51 @@ function Rooms({ rooms, search, flash }) {
                             </tr>
                         </thead>
                         <tbody id="table-body">
-                            {filteredRooms.map((room) => (
-                                <tr className="bg-white border-b" key={room.id}>
-                                    <td className="px-6 py-4">
-                                        {room.room_number}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {room.room_type_name}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        ₱{room.price.toFixed(2)}
-                                    </td>
-                                    <td className="px-6 py-4">{room.pax}</td>
-                                    <td className="px-6 py-4">
-                                        {room.stay_type}
+                            {filteredStaff.map((member) => (
+                                <tr
+                                    key={member.id}
+                                    className="bg-white border-b hover:bg-gray-100 cursor-pointer"
+                                >
+                                    <td className="px-6 py-4" colSpan="3">
+                                        <Link
+                                            href={route("staff.show", {
+                                                id: member.id,
+                                            })}
+                                            className="block w-full h-full"
+                                        >
+                                            <div className="flex justify-between">
+                                                <span>{member.name}</span>
+                                                <span>
+                                                    ₱{member.salary.toFixed(2)}
+                                                </span>
+                                                <span>
+                                                    {new Date(
+                                                        member.payout_date
+                                                    ).toLocaleDateString(
+                                                        "en-US",
+                                                        {
+                                                            year: "numeric",
+                                                            month: "long",
+                                                            day: "numeric",
+                                                        }
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </Link>
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <EntityActions
-                                            entity={room}
-                                            entityName="rooms"
+                                            entity={member}
+                                            entityName="staff"
                                             editRoute={(id) =>
-                                                route("rooms.edit", {
-                                                    room: id,
+                                                route("staff.edit", {
+                                                    staff: id,
                                                 })
                                             }
                                             onDelete={(id) =>
                                                 confirmDelete(
                                                     `delete-form-${id}`,
-                                                    "room"
+                                                    "staff member"
                                                 )
                                             }
                                         />
@@ -196,15 +183,19 @@ function Rooms({ rooms, search, flash }) {
 
                 <Pagination
                     currentPage={currentPage}
-                    lastPage={rooms.last_page}
+                    lastPage={staff.last_page}
                     onPageChange={handlePageChange}
                 />
 
-                <RoomCard rooms={filteredRooms} confirmDelete={confirmDelete} />
+                <StaffCard
+                    staff={filteredStaff}
+                    confirmDelete={confirmDelete}
+                />
             </Suspense>
         </>
     );
 }
 
-Rooms.layout = (page) => <AuthSidebar children={page} />;
-export default Rooms;
+Staff.layout = (page) => <AuthSidebar children={page} />;
+
+export default Staff;

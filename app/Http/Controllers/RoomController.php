@@ -4,10 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Room;
 use App\Models\RoomType;
-use App\Http\Requests\StoreRoomRequest;
-use App\Http\Requests\UpdateRoomRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class RoomController extends Controller
@@ -17,9 +14,8 @@ class RoomController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Room::query();
-
-        $query->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
+        $query = Room::query()
+            ->join('room_types', 'rooms.room_type_id', '=', 'room_types.id')
             ->select('rooms.*', 'room_types.name as room_type_name');
 
         if ($request->filled('search')) {
@@ -31,7 +27,7 @@ class RoomController extends Controller
             });
         }
 
-        $rooms = $query->latest()->paginate(10);
+        $rooms = $query->latest()->paginate(10)->withQueryString();
 
         return inertia('Rooms/Rooms', [
             'rooms' => $rooms,
@@ -86,7 +82,12 @@ class RoomController extends Controller
      */
     public function edit(Room $room)
     {
-        //
+        $room_types = RoomType::all();
+
+        return Inertia::render('Rooms/RoomEdit', [
+            'room' => $room,
+            'room_types' => $room_types,
+        ]);
     }
 
     /**
@@ -94,7 +95,19 @@ class RoomController extends Controller
      */
     public function update(Request $request, Room $room)
     {
-        //
+        $fields = $request->validate([
+            'room_number' => ['required', 'string', 'max:255', 'unique:rooms,room_number,' . $room->id],
+            'room_type_id' => ['required', 'exists:room_types,id'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'pax' => ['required', 'integer', 'min:1'],
+            'stay_type' => ['required', 'string', 'in:day tour,overnight'],
+        ]);
+
+        $room->update($fields);
+
+        session()->flash('success', 'Room updated successfully.');
+
+        return redirect()->route('rooms.index');
     }
 
     /**
@@ -102,6 +115,10 @@ class RoomController extends Controller
      */
     public function destroy(Room $room)
     {
-        //
+        $room->delete();
+
+        session()->flash('deleted', 'Staff deleted successfully.');
+
+        return redirect()->route('rooms.index');
     }
 }

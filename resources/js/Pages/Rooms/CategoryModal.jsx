@@ -1,5 +1,3 @@
-import React from "react";
-
 function CategoryModal({ isOpen, onClose, onSubmit, data, setData, processing, errors }) {
     if (!isOpen) return null;
 

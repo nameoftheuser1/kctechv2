@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useForm, usePage } from "@inertiajs/react";
+import ChangePasswordModal from "../../Pages/ChangePasswordModal";
 
 export default function AuthSidebar({ children }) {
-    const { post } = useForm();
+    const { post, data, setData, processing, errors } = useForm({
+        current_password: "",
+        new_password: "",
+        new_password_confirmation: "",
+    });
     const { url } = usePage();
     const [isOpen, setIsOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const sidebarRef = useRef(null);
 
     const toggleSidebar = () => {
@@ -14,6 +20,30 @@ export default function AuthSidebar({ children }) {
     const handleLogout = (e) => {
         e.preventDefault();
         post("/logout");
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post("/change-password", {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                closeModal();
+                setData({
+                    current_password: "",
+                    new_password: "",
+                    new_password_confirmation: "",
+                });
+            },
+        });
+    };
+
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
     };
 
     useEffect(() => {
@@ -66,6 +96,17 @@ export default function AuthSidebar({ children }) {
             label: "Staff Management",
             href: "/staff",
         },
+        {
+            icon: (
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
+                />
+            ),
+            label: "Expenses",
+            href: "/expenses",
+        },
     ];
 
     return (
@@ -107,7 +148,7 @@ export default function AuthSidebar({ children }) {
                             <Link
                                 href={link.href}
                                 className={`flex items-center space-x-2 text-gray-500 ${
-                                    url === link.href
+                                    url.startsWith(link.href)
                                         ? "bg-indigo-800 !text-white p-2 rounded-lg ps-5"
                                         : ""
                                 }`}
@@ -127,10 +168,30 @@ export default function AuthSidebar({ children }) {
                         </li>
                     ))}
                 </ul>
+                <button
+                    onClick={openModal}
+                    className="flex items-center font-semibold text-xs text-white justify-center uppercase tracking-widest bg-indigo-600 w-full rounded-lg p-3 mb-2 mt-10"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5 mr-2"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                        />
+                    </svg>
+                    Change Password
+                </button>
                 <form onSubmit={handleLogout} className="mt-auto">
                     <button
                         type="submit"
-                        className="flex items-center font-semibold text-xs text-white justify-center uppercase tracking-widest bg-slate-700 w-full rounded-lg p-3 mt-10"
+                        className="flex items-center font-semibold text-xs text-white justify-center uppercase tracking-widest bg-slate-700 w-full rounded-lg p-3"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -153,6 +214,16 @@ export default function AuthSidebar({ children }) {
             <main className="flex-1 p-4 mt-14 lg:mt-0 ms-0 lg:ms-64 bg-gray-100 min-h-screen">
                 {children}
             </main>
+
+            <ChangePasswordModal
+                isOpen={isModalOpen}
+                closeModal={closeModal}
+                data={data}
+                setData={setData}
+                handleSubmit={handleSubmit}
+                processing={processing}
+                errors={errors}
+            />
         </div>
     );
 }

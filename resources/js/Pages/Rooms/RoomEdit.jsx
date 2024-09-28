@@ -1,30 +1,31 @@
 import React, { lazy, Suspense } from "react";
 import { Link, useForm } from "@inertiajs/react";
 import { useRoute } from "../../../../vendor/tightenco/ziggy";
+
 import AuthSidebar from "@/Components/Layouts/AuthSidebar";
-import Spinner from "@/Components/Shared/Spinner";
+import Spinner from "../../Components/Shared/Spinner";
 
 const InputLabel = lazy(() => import("@/Components/Forms/InputLabel"));
 const TextInput = lazy(() => import("@/Components/Forms/TextInput"));
 const InputError = lazy(() => import("@/Components/Forms/InputError"));
 
-function RoomCreate({ room_types }) {
+function RoomEdit({ room, room_types }) {
     const route = useRoute();
-    const { data, setData, post, processing, errors } = useForm({
-        room_number: "",
-        room_type_id: "",
-        price: 0,
-        pax: 0,
-        stay_type: "",
+    const { data, setData, put, processing, errors } = useForm({
+        room_number: room.room_number,
+        room_type_id: room.room_type_id,
+        price: room.price,
+        pax: room.pax,
+        stay_type: room.stay_type,
     });
 
     function handleSubmit(e) {
         e.preventDefault();
-        post(route("rooms.store"), {
+        put(route("rooms.update", room.id), {
             preserveState: true,
             preserveScroll: true,
             onError: (errors) => {
-                console.error("Error creating room:", errors);
+                console.error("Error updating room:", errors);
             },
         });
     }
@@ -40,10 +41,10 @@ function RoomCreate({ room_types }) {
                         &larr; back to room list
                     </Link>
                     <h1 className="text-3xl font-bold text-slate-700 mt-4">
-                        Create New Room
+                        Edit Room
                     </h1>
                     <p className="text-sm text-slate-500 mb-6">
-                        Add room details
+                        Update room details
                     </p>
                     <form
                         onSubmit={handleSubmit}
@@ -163,10 +164,10 @@ function RoomCreate({ room_types }) {
                         <div>
                             <button
                                 type="submit"
-                                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 disabled={processing}
                             >
-                                Create Room
+                                Update Room
                             </button>
                         </div>
                     </form>
@@ -176,6 +177,6 @@ function RoomCreate({ room_types }) {
     );
 }
 
-RoomCreate.layout = (page) => <AuthSidebar children={page} />;
+RoomEdit.layout = (page) => <AuthSidebar children={page} />;
 
-export default RoomCreate;
+export default RoomEdit;
