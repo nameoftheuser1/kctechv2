@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdvanceSalary;
-use App\Http\Requests\StoreAdvanceSalaryRequest;
-use App\Http\Requests\UpdateAdvanceSalaryRequest;
-use App\Models\Staff;
+use App\Models\StaffMember;
 use Illuminate\Http\Request;
 
 class AdvanceSalaryController extends Controller
@@ -21,7 +19,7 @@ class AdvanceSalaryController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Staff $staff)
+    public function create()
     {
 
     }
@@ -29,7 +27,7 @@ class AdvanceSalaryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Staff $staff,Request $request)
+    public function store(StaffMember $staff,Request $request)
     {
         $fields = $request->validate([
             'amount' => 'required|numeric',

@@ -1,12 +1,12 @@
 import React from "react";
-import { Link } from "@inertiajs/react";
+import { Link, useForm, router } from "@inertiajs/react";
 import { useRoute } from "../../../../vendor/tightenco/ziggy/src/js";
 
-export default function RoomCard({ rooms, confirmDelete }) {
+export default function RoomCard({ rooms }) {
     const route = useRoute();
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:p-6 mt-2 lg:hidden ">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:p-6 mt-2 lg:hidden">
             {rooms.map((room) => (
                 <div
                     className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 transform transition duration-300 hover:scale-105"
@@ -34,26 +34,15 @@ export default function RoomCard({ rooms, confirmDelete }) {
                         >
                             Edit
                         </Link>
-                        <button
-                            className="text-red-600 hover:text-red-800 font-medium"
-                            onClick={() =>
-                                confirmDelete(`delete-form-${room.id}`, "room")
-                            }
+                        <Link
+                            href={route("rooms.show", {
+                                id: room.id,
+                            })}
+                            className="text-blue-500 hover:underline"
                         >
-                            Delete
-                        </button>
+                            View
+                        </Link>
                     </div>
-
-                    <form
-                        id={`delete-form-${room.id}`}
-                        action={route("rooms.destroy", {
-                            room: room.id,
-                        })}
-                        method="POST"
-                        style={{ display: "none" }}
-                    >
-                        @csrf @method('DELETE')
-                    </form>
                 </div>
             ))}
         </div>

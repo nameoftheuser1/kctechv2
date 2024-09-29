@@ -17,7 +17,7 @@ function StaffShow({ staff, advanceSalaries }) {
     const handleAddAdvanceSalary = (e) => {
         e.preventDefault();
 
-        post(`/staff/store/${staff.id}`, {
+        post(`/staff/salaries/${staff.id}`, {
             preserveState: true,
             onSuccess: () => {
                 setCurrentAdvanceSalaries([

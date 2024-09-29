@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('room_types', function (Blueprint $table) {
@@ -28,22 +25,19 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('images', function (Blueprint $table) {
+        Schema::create('room_images', function (Blueprint $table) {
             $table->id();
-            $table->string('path_url');
-            $table->unsignedBigInteger('room_types_id');
-            $table->foreign('room_types_id')->references('id')->on('room_types')->onDelete('cascade');
+            $table->string('image_path');
+            $table->unsignedBigInteger('room_type_id');
+            $table->foreign('room_type_id')->references('id')->on('room_types')->onDelete('cascade');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('images');
+        Schema::dropIfExists('room_images');
         Schema::dropIfExists('rooms');
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('room_types');
     }
 };

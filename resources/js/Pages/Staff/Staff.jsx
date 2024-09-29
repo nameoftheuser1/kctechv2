@@ -3,17 +3,14 @@ import { Head, Link, useForm } from "@inertiajs/react";
 import { useRoute } from "../../../../vendor/tightenco/ziggy/src/js";
 import AuthSidebar from "../../Components/Layouts/AuthSidebar";
 
-const EntityActions = lazy(() => import("@/Components/Shared/EntityActions"));
 const Pagination = lazy(() => import("@/Components/Shared/Pagination"));
 const StaffCard = lazy(() => import("./StaffCard"));
 const Spinner = lazy(() => import("@/Components/Shared/Spinner"));
 
 function Staff({ staff, search, flash }) {
     const route = useRoute();
-
     const { success } = flash || {};
     const [showSuccess, setShowSuccess] = useState(false);
-
     const [filteredStaff, setFilteredStaff] = useState(staff.data);
     const [currentPage, setCurrentPage] = useState(staff.currentPage);
 
@@ -31,11 +28,6 @@ function Staff({ staff, search, flash }) {
         search: "",
     });
 
-    const confirmDelete = (formId, type) => {
-        if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
-            document.getElementById(formId).submit();
-        }
-    };
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -44,8 +36,14 @@ function Staff({ staff, search, flash }) {
         const filtered = staff.data.filter(
             (staffMember) =>
                 staffMember.name.toLowerCase().includes(searchValue) ||
-                staffMember.salary.toLowerCase().includes(searchValue) ||
-                staffMember.payout_date.toLowerCase().includes(searchValue)
+                staffMember.salary
+                    .toString()
+                    .toLowerCase()
+                    .includes(searchValue) ||
+                new Date(staffMember.payout_date)
+                    .toLocaleDateString()
+                    .toLowerCase()
+                    .includes(searchValue)
         );
 
         setFilteredStaff(filtered);
@@ -53,10 +51,10 @@ function Staff({ staff, search, flash }) {
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
-        post(route("staff.index"), { search: data.search, page: page });
+        post(route("staff.index"), { search: data.search, page });
     };
 
-    const columns = ["Name", "Salary", "Payout Date"];
+    const columns = ["Name", "Salary", "Payout Date", "Actions"];
 
     return (
         <>
@@ -71,6 +69,7 @@ function Staff({ staff, search, flash }) {
                         {success}
                     </div>
                 )}
+
                 <div className="mb-4 flex justify-center gap-4">
                     <Link
                         href={route("staff.create")}
@@ -97,13 +96,13 @@ function Staff({ staff, search, flash }) {
                         Search
                     </button>
                 </form>
+
                 <div className="hidden md:block">
-                    <table className="min-w-full text-sm text-left rtl:text-right text-gray-500">
-                        <caption className="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white w-full">
+                    <table className="min-w-full text-sm text-left text-gray-500">
+                        <caption className="p-5 text-lg font-semibold text-left text-gray-900 bg-white w-full">
                             Staff List
                             <p className="mt-1 text-sm font-normal text-gray-500">
-                                Browse a list of staff members in our
-                                reservation system.
+                                Browse a list of staff members in our reservation system.
                             </p>
                         </caption>
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
@@ -117,63 +116,30 @@ function Staff({ staff, search, flash }) {
                                         {col}
                                     </th>
                                 ))}
-                                <th
-                                    scope="col"
-                                    className="px-6 py-3 text-right"
-                                >
-                                    Actions
-                                </th>
                             </tr>
                         </thead>
                         <tbody id="table-body">
                             {filteredStaff.map((member) => (
                                 <tr
                                     key={member.id}
-                                    className="bg-white border-b hover:bg-gray-100 cursor-pointer"
+                                    className="bg-white border-b"
                                 >
-                                    <td className="px-6 py-4" colSpan="3">
-                                        <Link
-                                            href={route("staff.show", {
-                                                id: member.id,
-                                            })}
-                                            className="block w-full h-full"
-                                        >
-                                            <div className="flex justify-between">
-                                                <span>{member.name}</span>
-                                                <span>
-                                                    ₱{member.salary.toFixed(2)}
-                                                </span>
-                                                <span>
-                                                    {new Date(
-                                                        member.payout_date
-                                                    ).toLocaleDateString(
-                                                        "en-US",
-                                                        {
-                                                            year: "numeric",
-                                                            month: "long",
-                                                            day: "numeric",
-                                                        }
-                                                    )}
-                                                </span>
-                                            </div>
-                                        </Link>
+                                    <td className="px-6 py-4">{member.name}</td>
+                                    <td className="px-6 py-4">₱{member.salary.toFixed(2)}</td>
+                                    <td className="px-6 py-4">
+                                        {new Date(member.payout_date).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <EntityActions
-                                            entity={member}
-                                            entityName="staff"
-                                            editRoute={(id) =>
-                                                route("staff.edit", {
-                                                    staff: id,
-                                                })
-                                            }
-                                            onDelete={(id) =>
-                                                confirmDelete(
-                                                    `delete-form-${id}`,
-                                                    "staff member"
-                                                )
-                                            }
-                                        />
+                                    <td className="px-6 py-4">
+                                        <Link
+                                            href={route("staff.show", { id: member.id })}
+                                            className="text-blue-500 hover:underline"
+                                        >
+                                            View
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}
@@ -189,7 +155,6 @@ function Staff({ staff, search, flash }) {
 
                 <StaffCard
                     staff={filteredStaff}
-                    confirmDelete={confirmDelete}
                 />
             </Suspense>
         </>

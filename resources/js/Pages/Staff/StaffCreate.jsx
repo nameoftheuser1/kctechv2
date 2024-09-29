@@ -15,10 +15,11 @@ function StaffCreate() {
 
     function handleSubmit(e) {
         e.preventDefault();
-        post(route("staff.store", { staff: data }), {
+        post(route("staff.store"), {
             preserveState: true,
             preserveScroll: true,
             onError: (errors) => {
+                console.log(data);
                 console.error("Error creating staff:", errors);
             },
         });

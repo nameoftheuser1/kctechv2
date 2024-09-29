@@ -2,20 +2,15 @@ import React from "react";
 import { Link } from "@inertiajs/react";
 import { useRoute } from "../../../../vendor/tightenco/ziggy/src/js";
 
-export default function StaffCard({ staff, confirmDelete }) {
+export default function StaffCard({ staff }) {
     const route = useRoute();
-
-    const handleCardClick = (staffMemberId) => {
-        window.location.href = route("staff.show", staffMemberId);
-    };
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 lg:hidden">
             {staff.map((staffMember) => (
                 <div
-                    className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 transform transition duration-300 hover:scale-105 cursor-pointer"
+                    className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 transform transition duration-300 hover:scale-105"
                     key={staffMember.id}
-                    onClick={() => handleCardClick(staffMember.id)}
                 >
                     <h3 className="text-xl font-semibold mb-2 text-gray-800">
                         {staffMember.name}
@@ -38,6 +33,14 @@ export default function StaffCard({ staff, confirmDelete }) {
 
                     <div className="flex justify-between items-center">
                         <Link
+                            href={route("staff.show", {
+                                staff: staffMember.id,
+                            })}
+                            className="text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                            View
+                        </Link>
+                        <Link
                             href={route("staff.edit", {
                                 staff: staffMember.id,
                             })}
@@ -45,18 +48,6 @@ export default function StaffCard({ staff, confirmDelete }) {
                         >
                             Edit
                         </Link>
-                        <button
-                            className="text-red-600 hover:text-red-800 font-medium"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                confirmDelete(
-                                    `delete-form-${staffMember.id}`,
-                                    "staff Member"
-                                );
-                            }}
-                        >
-                            Delete
-                        </button>
                     </div>
 
                     <form

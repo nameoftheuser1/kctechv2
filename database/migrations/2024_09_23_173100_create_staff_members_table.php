@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->decimal('salary', 8, 2);
-            $table->date('payout_date');
+            $table->dateTime('payout_date');
             $table->timestamps();
         });
     }

@@ -5,18 +5,14 @@ import AuthSidebar from "@/Components/Layouts/AuthSidebar";
 import Spinner from "@/Components/Shared/Spinner";
 
 const RoomCard = lazy(() => import("./RoomCard"));
-const CategoryModal = lazy(() => import("./CategoryModal"));
+const TypeModal = lazy(() => import("./TypeModal"));
 const Pagination = lazy(() => import("@/Components/Shared/Pagination"));
-const EntityActions = lazy(() =>import("@/Components/Shared/EntityActions"));
 
 function Rooms({ rooms, search, flash }) {
     const route = useRoute();
-
     const [isModalOpen, setIsModalOpen] = useState(false);
-
     const { success } = flash || {};
     const [showSuccess, setShowSuccess] = useState(false);
-
     const [filteredRooms, setFilteredRooms] = useState(rooms.data);
     const [currentPage, setCurrentPage] = useState(rooms.current_page);
 
@@ -34,12 +30,6 @@ function Rooms({ rooms, search, flash }) {
         name: "",
         search: "",
     });
-
-    const confirmDelete = (formId, type) => {
-        if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
-            document.getElementById(formId).submit();
-        }
-    };
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -99,7 +89,7 @@ function Rooms({ rooms, search, flash }) {
                     </button>
                 </div>
 
-                <CategoryModal
+                <TypeModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onSubmit={handleRoomTypeSubmit}
@@ -172,21 +162,14 @@ function Rooms({ rooms, search, flash }) {
                                         {room.stay_type}
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <EntityActions
-                                            entity={room}
-                                            entityName="rooms"
-                                            editRoute={(id) =>
-                                                route("rooms.edit", {
-                                                    room: id,
-                                                })
-                                            }
-                                            onDelete={(id) =>
-                                                confirmDelete(
-                                                    `delete-form-${id}`,
-                                                    "room"
-                                                )
-                                            }
-                                        />
+                                        <Link
+                                            href={route("rooms.show", {
+                                                id: room.id,
+                                            })}
+                                            className="text-blue-500 hover:underline"
+                                        >
+                                            View
+                                        </Link>
                                     </td>
                                 </tr>
                             ))}
@@ -200,7 +183,7 @@ function Rooms({ rooms, search, flash }) {
                     onPageChange={handlePageChange}
                 />
 
-                <RoomCard rooms={filteredRooms} confirmDelete={confirmDelete} />
+                <RoomCard rooms={filteredRooms} />
             </Suspense>
         </>
     );

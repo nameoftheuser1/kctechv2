@@ -19,8 +19,8 @@ class AdvanceSalary extends Model
         'date' => 'date',
     ];
 
-    public function staff(): BelongsTo
+    public function staffMember(): BelongsTo
     {
-        return $this->belongsTo(Staff::class);
+        return $this->belongsTo(StaffMember::class);
     }
 }
